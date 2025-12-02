@@ -1,0 +1,5 @@
+.DS_Store
+*.xcf
+cdk.out/
+dist/
+cdk.context.json
