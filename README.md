@@ -4,11 +4,23 @@ A serverless lead management system built with .NET 8 Blazor WebAssembly and AWS
 ## Architecture
 **Frontend**: Blazor WebAssembly SPA with component-based UI, client-side routing, and JWT-based authentication
 
+<img src="./Documents/login.png" alt="login" width="200">
+<img src="./Documents/dashboard.png" alt="dashboard" width="200">
+<img src="./Documents/edit.png" alt="edit" width="200">
+
 **Backend**: AWS Lambda functions (.NET 8) behind API Gateway with Cognito authorization
+
+<img src="./Documents/lambda.png" alt="lambda" width="200">
+<img src="./Documents/api-gateway.png" alt="api-gateway" width="200">
 
 **Infrastructure**: Fully automated AWS CDK deployment (C#) provisioning Cognito user pools, DynamoDB tables, S3 hosting, and CloudFront distribution
 
+<img src="./Documents/cognito.png" alt="cognito" width="200">
+<img src="./Documents/s3.png" alt="s3" width="200">
+
 **Data Layer**: DynamoDB with composite keys (userId + leadId) ensuring complete user data isolation
+
+<img src="./Documents/dynamo-db.png" alt="dynamo-db" width="200">
 
 ## Key Features
 Email/password authentication via AWS Cognito
