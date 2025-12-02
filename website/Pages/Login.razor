@@ -1,0 +1,148 @@
+@page "/login"
+@using website.Services
+@using website.Models
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Login - Mountain Leads</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Login to access your leads</p>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @_errorMessage
+            </div>
+        }
+
+        <EditForm Model="@_credentials" OnValidSubmit="@HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <InputText id="email" 
+                          class="form-control" 
+                          @bind-Value="_credentials.Email" 
+                          placeholder="Enter your email"
+                          disabled="@_isLoading" />
+                <ValidationMessage For="@(() => _credentials.Email)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText id="password" 
+                          type="password" 
+                          class="form-control" 
+                          @bind-Value="_credentials.Password" 
+                          placeholder="Enter your password"
+                          disabled="@_isLoading" />
+                <ValidationMessage For="@(() => _credentials.Password)" />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" disabled="@_isLoading">
+                @if (_isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span> Logging in...</span>
+                }
+                else
+                {
+                    <span>Login</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="register-link">
+            <p>Don't have an account? <a href="/register">Register here</a></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private UserCredentials _credentials = new();
+    private string _errorMessage = string.Empty;
+    private bool _isLoading = false;
+
+    private async Task HandleLogin()
+    {
+        // Clear previous messages
+        _errorMessage = string.Empty;
+
+        // Validate form
+        if (!ValidateForm())
+        {
+            return;
+        }
+
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Authenticate user with Cognito
+            var authResult = await AuthService.LoginAsync(_credentials.Email, _credentials.Password);
+
+            if (authResult == null)
+            {
+                _errorMessage = "Invalid email or password. Please try again.";
+                _isLoading = false;
+                return;
+            }
+
+            // Redirect to dashboard on success
+            Navigation.NavigateTo("/dashboard");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred during login: {ex.Message}";
+            Console.WriteLine($"Login error: {ex}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool ValidateForm()
+    {
+        // Validate email
+        if (string.IsNullOrWhiteSpace(_credentials.Email))
+        {
+            _errorMessage = "Email is required.";
+            return false;
+        }
+
+        if (!IsValidEmail(_credentials.Email))
+        {
+            _errorMessage = "Please enter a valid email address.";
+            return false;
+        }
+
+        // Validate password
+        if (string.IsNullOrWhiteSpace(_credentials.Password))
+        {
+            _errorMessage = "Password is required.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}

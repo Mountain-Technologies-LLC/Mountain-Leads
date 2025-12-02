@@ -1,0 +1,455 @@
+@page "/dashboard"
+@using website.Services
+@using website.Models
+@inject IAuthService AuthService
+@inject ILeadService LeadService
+@inject NavigationManager Navigation
+
+<PageTitle>Dashboard - Mountain Leads</PageTitle>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>My Leads</h1>
+        <div class="header-actions">
+            <button class="btn btn-primary" @onclick="ShowCreateForm">
+                <span class="icon">+</span> Create Lead
+            </button>
+            <button class="btn btn-secondary" @onclick="HandleLogout">
+                Logout
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @_errorMessage
+            <button type="button" class="close" @onclick="() => _errorMessage = string.Empty">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_successMessage))
+    {
+        <div class="alert alert-success" role="alert">
+            @_successMessage
+            <button type="button" class="close" @onclick="() => _successMessage = string.Empty">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (_isLoading)
+    {
+        <div class="loading-container">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p>Loading leads...</p>
+        </div>
+    }
+    else if (_showCreateForm || _editingLead != null)
+    {
+        <div class="lead-form-container">
+            <div class="lead-form-card">
+                <h2>@(_editingLead != null ? "Edit Lead" : "Create New Lead")</h2>
+                
+                <EditForm Model="@_leadForm" OnValidSubmit="@HandleSaveLead">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name *</label>
+                            <InputText id="name" 
+                                      class="form-control" 
+                                      @bind-Value="_leadForm.Name" 
+                                      placeholder="Enter name" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="title">Title</label>
+                            <InputText id="title" 
+                                      class="form-control" 
+                                      @bind-Value="_leadForm.Title" 
+                                      placeholder="Enter title" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="company">Company</label>
+                            <InputText id="company" 
+                                      class="form-control" 
+                                      @bind-Value="_leadForm.Company" 
+                                      placeholder="Enter company" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <InputText id="phone" 
+                                      class="form-control" 
+                                      @bind-Value="_leadForm.Phone" 
+                                      placeholder="Enter phone" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <InputText id="email" 
+                                      class="form-control" 
+                                      @bind-Value="_leadForm.Email" 
+                                      placeholder="Enter email" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <InputText id="location" 
+                                      class="form-control" 
+                                      @bind-Value="_leadForm.Location" 
+                                      placeholder="Enter location" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <InputTextArea id="notes" 
+                                      class="form-control" 
+                                      @bind-Value="_leadForm.Notes" 
+                                      placeholder="Enter notes"
+                                      rows="3" />
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" disabled="@_isSaving">
+                            @if (_isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                <span> Saving...</span>
+                            }
+                            else
+                            {
+                                <span>@(_editingLead != null ? "Update Lead" : "Create Lead")</span>
+                            }
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="CancelForm" disabled="@_isSaving">
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+    else if (_leads.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <h2>No leads yet</h2>
+            <p>Get started by creating your first lead</p>
+            <button class="btn btn-primary" @onclick="ShowCreateForm">
+                <span class="icon">+</span> Create Your First Lead
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="leads-table-container">
+            <table class="leads-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Title</th>
+                        <th>Company</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Location</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var lead in _leads)
+                    {
+                        <tr>
+                            <td>@lead.Name</td>
+                            <td>@(lead.Title ?? "-")</td>
+                            <td>@(lead.Company ?? "-")</td>
+                            <td>@(lead.Phone ?? "-")</td>
+                            <td>@(lead.Email ?? "-")</td>
+                            <td>@(lead.Location ?? "-")</td>
+                            <td class="notes-cell">@(lead.Notes ?? "-")</td>
+                            <td class="actions-cell">
+                                <button class="btn btn-sm btn-edit" @onclick="() => ShowEditForm(lead)" title="Edit">
+                                    ✏️
+                                </button>
+                                <button class="btn btn-sm btn-delete" @onclick="() => ShowDeleteConfirmation(lead)" title="Delete">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (_showDeleteConfirmation && _leadToDelete != null)
+    {
+        <div class="modal-overlay" @onclick="CancelDelete">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <h3>Confirm Delete</h3>
+                <p>Are you sure you want to delete the lead for <strong>@_leadToDelete.Name</strong>?</p>
+                <p class="warning-text">This action cannot be undone.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-danger" @onclick="HandleDelete" disabled="@_isDeleting">
+                        @if (_isDeleting)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                            <span> Deleting...</span>
+                        }
+                        else
+                        {
+                            <span>Delete</span>
+                        }
+                    </button>
+                    <button class="btn btn-secondary" @onclick="CancelDelete" disabled="@_isDeleting">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Lead> _leads = new();
+    private LeadFormModel _leadForm = new();
+    private Lead? _editingLead = null;
+    private Lead? _leadToDelete = null;
+    
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private bool _isDeleting = false;
+    private bool _showCreateForm = false;
+    private bool _showDeleteConfirmation = false;
+    
+    private string _errorMessage = string.Empty;
+    private string _successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check authentication
+        var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        if (!isAuthenticated)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        // Load leads
+        await LoadLeads();
+    }
+
+    private async Task LoadLeads()
+    {
+        _isLoading = true;
+        _errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            _leads = await LeadService.GetLeadsAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Failed to load leads. Please try again.";
+            Console.WriteLine($"Load leads error: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        _leadForm = new LeadFormModel();
+        _editingLead = null;
+        _showCreateForm = true;
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+    }
+
+    private void ShowEditForm(Lead lead)
+    {
+        _editingLead = lead;
+        _leadForm = new LeadFormModel
+        {
+            Name = lead.Name,
+            Title = lead.Title,
+            Company = lead.Company,
+            Phone = lead.Phone,
+            Email = lead.Email,
+            Location = lead.Location,
+            Notes = lead.Notes
+        };
+        _showCreateForm = false;
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+    }
+
+    private void CancelForm()
+    {
+        _showCreateForm = false;
+        _editingLead = null;
+        _leadForm = new LeadFormModel();
+    }
+
+    private async Task HandleSaveLead()
+    {
+        if (string.IsNullOrWhiteSpace(_leadForm.Name))
+        {
+            _errorMessage = "Name is required.";
+            return;
+        }
+
+        _isSaving = true;
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            if (_editingLead != null)
+            {
+                // Update existing lead
+                var updateRequest = new UpdateLeadRequest
+                {
+                    Name = _leadForm.Name,
+                    Title = _leadForm.Title,
+                    Company = _leadForm.Company,
+                    Phone = _leadForm.Phone,
+                    Email = _leadForm.Email,
+                    Location = _leadForm.Location,
+                    Notes = _leadForm.Notes
+                };
+
+                var updatedLead = await LeadService.UpdateLeadAsync(_editingLead.LeadId, updateRequest);
+
+                if (updatedLead != null)
+                {
+                    _successMessage = "Lead updated successfully!";
+                    _editingLead = null;
+                    await LoadLeads();
+                }
+                else
+                {
+                    _errorMessage = "Failed to update lead. Please try again.";
+                }
+            }
+            else
+            {
+                // Create new lead
+                var createRequest = new CreateLeadRequest
+                {
+                    Name = _leadForm.Name,
+                    Title = _leadForm.Title,
+                    Company = _leadForm.Company,
+                    Phone = _leadForm.Phone,
+                    Email = _leadForm.Email,
+                    Location = _leadForm.Location,
+                    Notes = _leadForm.Notes
+                };
+
+                var createdLead = await LeadService.CreateLeadAsync(createRequest);
+
+                if (createdLead != null)
+                {
+                    _successMessage = "Lead created successfully!";
+                    _showCreateForm = false;
+                    await LoadLeads();
+                }
+                else
+                {
+                    _errorMessage = "Failed to create lead. Please try again.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine($"Save lead error: {ex}");
+        }
+        finally
+        {
+            _isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowDeleteConfirmation(Lead lead)
+    {
+        _leadToDelete = lead;
+        _showDeleteConfirmation = true;
+        _errorMessage = string.Empty;
+    }
+
+    private void CancelDelete()
+    {
+        _showDeleteConfirmation = false;
+        _leadToDelete = null;
+    }
+
+    private async Task HandleDelete()
+    {
+        if (_leadToDelete == null) return;
+
+        _isDeleting = true;
+        _errorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var success = await LeadService.DeleteLeadAsync(_leadToDelete.LeadId);
+
+            if (success)
+            {
+                _successMessage = $"Lead for {_leadToDelete.Name} deleted successfully!";
+                _showDeleteConfirmation = false;
+                _leadToDelete = null;
+                await LoadLeads();
+            }
+            else
+            {
+                _errorMessage = "Failed to delete lead. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
+            Console.WriteLine($"Delete lead error: {ex}");
+        }
+        finally
+        {
+            _isDeleting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+
+    private class LeadFormModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Title { get; set; }
+        public string? Company { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+        public string? Location { get; set; }
+        public string? Notes { get; set; }
+    }
+}

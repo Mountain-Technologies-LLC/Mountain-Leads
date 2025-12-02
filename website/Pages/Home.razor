@@ -1,0 +1,25 @@
+﻿@page "/"
+@using website.Services
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Mountain Leads</PageTitle>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if user is authenticated
+        var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        
+        if (isAuthenticated)
+        {
+            // Redirect to dashboard if authenticated
+            Navigation.NavigateTo("/dashboard", replace: true);
+        }
+        else
+        {
+            // Redirect to login if not authenticated
+            Navigation.NavigateTo("/login", replace: true);
+        }
+    }
+}

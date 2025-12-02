@@ -1,0 +1,19 @@
+{
+  "name": "mountain-leads-website",
+  "version": "1.0.0",
+  "description": "Node package for the website",
+  "scripts": {
+    "build": "dotnet build",
+    "test": "dotnet test",
+    "publish": "dotnet publish -c Release",
+    "clean-install": "dotnet clean && npm install",
+    "start": "dotnet run"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "blazor",
+    "dotnet"
+  ],
+  "author": "Mountain Technologies LLC",
+  "license": "MIT"
+}
