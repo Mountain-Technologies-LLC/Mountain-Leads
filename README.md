@@ -1,5 +1,35 @@
 # Mountain Leads
-Mountain Leads repo of Mountain Technologies LLC
+A serverless lead management system built with .NET 8 Blazor WebAssembly and AWS cloud services. Mountain Leads provides secure, user-isolated contact tracking with full CRUD operations, deployed as a globally distributed single-page application.
+
+## Architecture
+**Frontend**: Blazor WebAssembly SPA with component-based UI, client-side routing, and JWT-based authentication
+
+**Backend**: AWS Lambda functions (.NET 8) behind API Gateway with Cognito authorization
+
+**Infrastructure**: Fully automated AWS CDK deployment (C#) provisioning Cognito user pools, DynamoDB tables, S3 hosting, and CloudFront distribution
+
+**Data Layer**: DynamoDB with composite keys (userId + leadId) ensuring complete user data isolation
+
+## Key Features
+Email/password authentication via AWS Cognito
+Private lead database per user with create, read, update, delete operations
+Responsive dashboard for managing business contacts (name, title, company, phone, email, location, notes)
+Automatic initialization with sample leads for new users
+Global CDN delivery via CloudFront
+Pay-per-request serverless architecture with no idle costs
+
+## Tech Highlights
+C# throughout the stack (CDK infrastructure, Lambda functions, Blazor frontend)
+Reusable CDK constructs for modular infrastructure
+Service layer pattern with dependency injection
+Property-based testing with FsCheck
+NPM-orchestrated build and deployment pipeline
+Nullable reference types enabled for improved type safety
+
+## Deployment
+Production: https://leads.mountaintechnologiesllc.com
+
+Single command deployment: `npm run deploy:full`
 
 # Local Commands
 * `npm run start`
