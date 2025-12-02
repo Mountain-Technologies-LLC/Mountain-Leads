@@ -1,0 +1,301 @@
+# Implementation Plan
+
+- [x] 1. Set up Blazor WebAssembly project structure
+  - Create new Blazor WebAssembly project in ./website folder
+  - Configure project for .NET 8
+  - Set up folder structure: Pages, Services, Models, Components
+  - Add required NuGet packages: Amazon.Extensions.CognitoAuthentication, AWSSDK.DynamoDBv2
+  - Create appsettings.json for AWS configuration
+  - _Requirements: 8.4, 8.5, 10.1_
+
+- [x] 2. Implement CDK Cognito construct
+  - [x] 2.1 Create CognitoConstruct.cs in infrastructure/src/Infrastructure/Constructs
+    - Define Cognito User Pool with email sign-in
+    - Configure password policy (min 8 chars, uppercase, lowercase, number)
+    - Create User Pool Client for Blazor app (no client secret)
+    - Set user pool name based on domain: leads-mountaintechnologiesllc-com-users
+    - Add CloudFormation outputs for User Pool ID and Client ID
+    - _Requirements: 1.1, 1.4, 7.1_
+  - [x] 2.2 Write property test for Cognito construct
+    - **Property 1: User registration creates Cognito account**
+    - **Validates: Requirements 1.1**
+
+- [x] 3. Implement CDK DynamoDB construct
+  - [x] 3.1 Create DynamoDbConstruct.cs in infrastructure/src/Infrastructure/Constructs
+    - Define DynamoDB table with partition key userId (String) and sort key leadId (String)
+    - Set table name based on domain: leads-mountaintechnologiesllc-com
+    - Configure on-demand billing mode
+    - Enable point-in-time recovery
+    - Add CloudFormation output for table name
+    - _Requirements: 7.2, 9.1, 9.5_
+  - [x] 3.2 Write property test for DynamoDB construct
+    - **Property 11: User data isolation**
+    - **Validates: Requirements 4.1, 9.1, 9.2, 9.4, 9.5**
+
+- [x] 4. Implement Lambda functions for CRUD operations
+  - [x] 4.1 Create Lambda project structure
+    - Create new .NET 8 Lambda project in infrastructure/src/Lambda
+    - Add NuGet packages: Amazon.Lambda.AspNetCoreServer, AWSSDK.DynamoDBv2
+    - Create shared Models folder with Lead.cs model
+    - Create shared utilities for JWT parsing and DynamoDB operations
+    - _Requirements: 3.1, 4.1, 5.1, 6.1_
+  - [x] 4.2 Implement CreateLeadFunction
+    - Extract userId from JWT claims (sub or cognito:username)
+    - Generate unique leadId using Guid.NewGuid()
+    - Validate input data (required fields)
+    - Store lead in DynamoDB with userId and leadId
+    - Return created lead with timestamps
+    - _Requirements: 3.1, 3.3, 9.1, 9.3_
+  - [x] 4.3 Write property test for CreateLeadFunction
+    - **Property 8: Authorized lead creation and storage**
+    - **Validates: Requirements 3.1, 3.3, 3.4**
+  - [x] 4.4 Implement ListLeadsFunction
+    - Extract userId from JWT claims
+    - Query DynamoDB with userId as partition key
+    - Return all leads for the user
+    - Handle empty results
+    - _Requirements: 4.1, 9.2_
+  - [x] 4.5 Write property test for ListLeadsFunction
+    - **Property 11: User data isolation**
+    - **Validates: Requirements 4.1, 9.1, 9.2, 9.4, 9.5**
+  - [x] 4.6 Implement GetLeadFunction
+    - Extract userId from JWT claims
+    - Get lead from DynamoDB using userId and leadId
+    - Verify lead belongs to user (authorization check)
+    - Return lead or 404 if not found
+    - _Requirements: 4.1, 5.2_
+  - [x] 4.7 Write property test for GetLeadFunction
+    - **Property 12: Lead data completeness**
+    - **Validates: Requirements 4.2**
+  - [x] 4.8 Implement UpdateLeadFunction
+    - Extract userId from JWT claims
+    - Verify lead exists and belongs to user
+    - Update lead fields in DynamoDB
+    - Update updatedAt timestamp
+    - Return updated lead
+    - _Requirements: 5.1, 5.2_
+  - [x] 4.9 Write property test for UpdateLeadFunction
+    - **Property 14: Authorized lead update and consistency**
+    - **Validates: Requirements 5.1, 5.3**
+  - [x] 4.10 Write property test for cross-user update prevention
+    - **Property 15: Cross-user modification prevention**
+    - **Validates: Requirements 5.2, 5.5, 6.2, 6.4**
+  - [x] 4.11 Implement DeleteLeadFunction
+    - Extract userId from JWT claims
+    - Verify lead exists and belongs to user
+    - Delete lead from DynamoDB
+    - Return success response
+    - _Requirements: 6.1, 6.2_
+  - [x] 4.12 Write property test for DeleteLeadFunction
+    - **Property 17: Authorized lead deletion and removal**
+    - **Validates: Requirements 6.1, 6.3**
+  - [x] 4.13 Implement InitLeadsFunction
+    - Extract userId and email from JWT claims
+    - Create Anthony Pearson default lead with all fields populated
+    - Create user email lead with only email field populated
+    - Store both leads in DynamoDB
+    - Return success response
+    - _Requirements: 1.2, 1.3_
+  - [x] 4.14 Write property test for InitLeadsFunction
+    - **Property 2: Default Anthony Pearson lead creation**
+    - **Validates: Requirements 1.2**
+  - [x] 4.15 Write property test for user email lead creation
+    - **Property 3: User email lead creation**
+    - **Validates: Requirements 1.3**
+  - [x] 4.16 Write unit tests for JWT token extraction utility
+    - Test extracting userId from various JWT token formats
+    - Test handling malformed tokens
+    - Test handling missing claims
+    - _Requirements: 9.3_
+  - [x] 4.17 Write unit tests for error handling
+    - Test validation error responses
+    - Test authorization error responses
+    - Test not found error responses
+    - _Requirements: 3.5, 5.4, 6.5_
+
+- [x] 5. Implement CDK Lambda construct
+  - [x] 5.1 Create LambdaConstruct.cs in infrastructure/src/Infrastructure/Constructs
+    - Create Lambda functions for all CRUD operations
+    - Configure .NET 8 runtime
+    - Set environment variables (TABLE_NAME, AWS_REGION)
+    - Grant DynamoDB permissions (PutItem, GetItem, Query, UpdateItem, DeleteItem)
+    - Configure timeout (30 seconds) and memory (512MB)
+    - _Requirements: 7.3_
+
+- [x] 6. Implement CDK API Gateway construct
+  - [x] 6.1 Create ApiGatewayConstruct.cs in infrastructure/src/Infrastructure/Constructs
+    - Create REST API with name based on domain
+    - Configure Cognito User Pool authorizer
+    - Create /leads resource with POST, GET methods
+    - Create /leads/{leadId} resource with GET, PUT, DELETE methods
+    - Create /leads/init resource with POST method
+    - Integrate each method with corresponding Lambda function
+    - Configure CORS for CloudFront domain
+    - Add CloudFormation output for API Gateway URL
+    - _Requirements: 7.3, 8.1_
+  - [x] 6.2 Write property test for API Gateway authorization
+    - **Property 9: API authorization requirement**
+    - **Validates: Requirements 3.2, 4.5, 5.2, 6.2**
+
+- [x] 7. Update CDK InfrastructureStack to include new constructs
+  - Add CognitoConstruct instantiation
+  - Add DynamoDbConstruct instantiation
+  - Add LambdaConstruct instantiation (pass DynamoDB table reference)
+  - Add ApiGatewayConstruct instantiation (pass Cognito and Lambda references)
+  - Ensure proper dependency order
+  - _Requirements: 7.1, 7.2, 7.3, 7.5_
+
+- [x] 8. Implement Blazor data models
+  - Create Models/Lead.cs with all lead properties
+  - Create Models/UserCredentials.cs for authentication
+  - Create Models/AuthenticationResult.cs for token storage
+  - Create Models/ApiResponse.cs for API responses
+  - Add JSON serialization attributes
+  - _Requirements: 3.1, 4.2_
+
+- [x] 9. Implement Blazor AuthService
+  - [x] 9.1 Create Services/AuthService.cs
+    - Implement RegisterAsync method using Cognito SDK
+    - Implement LoginAsync method using Cognito SDK
+    - Implement LogoutAsync method to clear tokens
+    - Implement token storage in sessionStorage
+    - Implement GetCurrentUserIdAsync to extract userId from token
+    - Implement IsAuthenticatedAsync to check token validity
+    - _Requirements: 1.1, 2.1, 2.2, 2.5_
+  - [x] 9.2 Write property test for AuthService
+    - **Property 5: Valid credential authentication**
+    - **Validates: Requirements 2.1, 2.3**
+  - [x] 9.3 Write property test for invalid credentials
+    - **Property 6: Invalid credential rejection**
+    - **Validates: Requirements 2.2**
+  - [x] 9.4 Write property test for logout
+    - **Property 7: Logout session invalidation**
+    - **Validates: Requirements 2.5**
+
+- [x] 10. Implement Blazor LeadService
+  - [x] 10.1 Create Services/LeadService.cs
+    - Configure HttpClient with API Gateway base URL
+    - Implement CreateLeadAsync method (POST /leads)
+    - Implement GetLeadsAsync method (GET /leads)
+    - Implement GetLeadAsync method (GET /leads/{leadId})
+    - Implement UpdateLeadAsync method (PUT /leads/{leadId})
+    - Implement DeleteLeadAsync method (DELETE /leads/{leadId})
+    - Implement InitializeDefaultLeadsAsync method (POST /leads/init)
+    - Add Authorization header with JWT token to all requests
+    - Handle API errors and return appropriate responses
+    - _Requirements: 3.1, 4.1, 5.1, 6.1, 8.1, 8.2_
+  - [x] 10.2 Write property test for LeadService
+    - **Property 18: JWT token inclusion and extraction**
+    - **Validates: Requirements 8.1, 9.3**
+  - [x] 10.3 Write unit tests for LeadService error handling
+    - Test handling 401 unauthorized responses
+    - Test handling 404 not found responses
+    - Test handling 500 server error responses
+    - _Requirements: 8.2_
+
+- [x] 11. Implement Blazor Register page
+  - Create Pages/Register.razor
+  - Add form with email and password fields
+  - Implement form validation
+  - Call AuthService.RegisterAsync on submit
+  - Call LeadService.InitializeDefaultLeadsAsync after successful registration
+  - Display success message and redirect to login
+  - Display error messages for registration failures
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
+
+- [x] 12. Implement Blazor Login page
+  - Create Pages/Login.razor
+  - Add form with email and password fields
+  - Call AuthService.LoginAsync on submit
+  - Store authentication tokens
+  - Redirect to dashboard on success
+  - Display error messages for authentication failures
+  - Add link to registration page
+  - _Requirements: 2.1, 2.2_
+
+- [x] 13. Implement Blazor Dashboard page
+  - [x] 13.1 Create Pages/Dashboard.razor
+    - Add authentication check (redirect to login if not authenticated)
+    - Load leads on page initialization using LeadService.GetLeadsAsync
+    - Display leads in a table with all fields (name, title, company, phone, email, location, notes)
+    - Add "Create Lead" button and form
+    - Add "Edit" button for each lead row
+    - Add "Delete" button for each lead row with confirmation
+    - Implement create lead functionality
+    - Implement update lead functionality
+    - Implement delete lead functionality
+    - Add logout button
+    - Display empty state message when no leads exist
+    - Handle API errors and display user-friendly messages
+    - _Requirements: 3.1, 3.4, 4.1, 4.2, 4.3, 5.1, 5.3, 6.1, 6.3_
+  - [x] 13.2 Write unit tests for Dashboard component
+    - Test rendering with leads
+    - Test rendering empty state
+    - Test create lead form submission
+    - Test update lead form submission
+    - Test delete lead confirmation
+    - _Requirements: 4.2, 4.3_
+
+- [x] 14. Implement Blazor routing and authentication guards
+  - Configure App.razor with routing
+  - Add route for /register
+  - Add route for /login
+  - Add route for /dashboard (default)
+  - Implement authentication guard to redirect unauthenticated users to login
+  - Configure redirect after login to dashboard
+  - _Requirements: 2.5, 4.4_
+
+- [x] 15. Configure Blazor application settings
+  - Update appsettings.json with placeholder values for AWS configuration
+  - Add configuration loading in Program.cs
+  - Register AuthService and LeadService in dependency injection
+  - Configure HttpClient with base address from configuration
+  - _Requirements: 8.5_
+
+- [x] 16. Update NPM package.json with build and deploy scripts
+  - Add script to build Blazor WebAssembly application
+  - Add script to deploy CDK infrastructure
+  - Add script to update Blazor configuration with CDK outputs
+  - Add script for full build and deploy workflow
+  - _Requirements: 10.1, 10.2, 10.4_
+
+- [x] 17. Update BucketDeploymentConstruct for Blazor output
+  - Update source path from "./dist/browser" to "./website/bin/Release/net8.0/publish/wwwroot"
+  - Ensure deployment invalidates CloudFront cache
+  - _Requirements: 7.4, 8.4_
+
+- [x] 18. Checkpoint - Deploy infrastructure and verify resources
+  - Ensure all tests pass, ask the user if questions arise
+  - Deploy CDK stack to AWS
+  - Verify Cognito User Pool created
+  - Verify DynamoDB table created
+  - Verify API Gateway created with all endpoints
+  - Verify Lambda functions created
+  - Capture CDK outputs (User Pool ID, Client ID, API Gateway URL)
+  - _Requirements: 7.1, 7.2, 7.3, 7.5_
+
+- [x] 19. Update Blazor configuration with deployed resource values
+  - Update appsettings.json with actual User Pool ID from CDK output
+  - Update appsettings.json with actual Client ID from CDK output
+  - Update appsettings.json with actual API Gateway URL from CDK output
+  - _Requirements: 8.5_
+
+- [x] 20. Build and deploy Blazor application
+  - Build Blazor WebAssembly application in Release mode
+  - Verify static files generated in publish/wwwroot
+  - Deploy to S3 bucket using CDK BucketDeployment
+  - Invalidate CloudFront cache
+  - _Requirements: 8.4, 10.1_
+
+- [x] 21. Final checkpoint - End-to-end testing
+  - Ensure all tests pass, ask the user if questions arise
+  - Test user registration flow
+  - Verify default leads created (Anthony Pearson and user email)
+  - Test user login flow
+  - Test creating a new lead
+  - Test viewing all leads in dashboard
+  - Test updating a lead
+  - Test deleting a lead
+  - Test logout flow
+  - Verify data isolation by creating second user and checking leads
+  - _Requirements: All_
