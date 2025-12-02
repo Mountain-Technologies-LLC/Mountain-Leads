@@ -1,0 +1,20 @@
+{
+  "name": "mountain-leads-aws-lambdas",
+  "version": "1.0.0",
+  "description": "Node package for the lambdas",
+  "scripts": {
+    "build": "dotnet build",
+    "test": "dotnet test",
+    "publish": "dotnet publish -c Release -r linux-x64",
+    "clean-install": "dotnet clean && npm install",
+    "start": "dotnet run"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "aws",
+    "lambda",
+    "dotnet"
+  ],
+  "author": "Mountain Technologies LLC",
+  "license": "MIT"
+}
