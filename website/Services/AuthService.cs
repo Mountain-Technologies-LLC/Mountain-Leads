@@ -11,6 +11,8 @@ namespace website.Services;
 public interface IAuthService
 {
     Task<AuthenticationResult?> RegisterAsync(string email, string password);
+    Task<bool> ConfirmRegistrationAsync(string email, string confirmationCode);
+    Task<bool> ResendConfirmationCodeAsync(string email);
     Task<AuthenticationResult?> LoginAsync(string email, string password);
     Task LogoutAsync();
     Task<string?> GetCurrentUserIdAsync();
@@ -75,14 +77,102 @@ public class AuthService : IAuthService
                 return null;
             }
 
-            // Auto-confirm user for development (in production, email verification would be required)
-            // For now, we'll attempt to login immediately after registration
-            return await LoginAsync(email, password);
+            // Return a dummy result to indicate success - user needs to confirm email
+            return new AuthenticationResult
+            {
+                IdToken = string.Empty,
+                AccessToken = string.Empty,
+                RefreshToken = string.Empty,
+                ExpiresIn = 0
+            };
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Registration error: {ex.Message}");
             return null;
+        }
+    }
+
+    public async Task<bool> ConfirmRegistrationAsync(string email, string confirmationCode)
+    {
+        try
+        {
+            var confirmRequest = new
+            {
+                ClientId = _clientId,
+                Username = email,
+                ConfirmationCode = confirmationCode
+            };
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = null
+            };
+            var jsonString = JsonSerializer.Serialize(confirmRequest, jsonOptions);
+            var content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/x-amz-json-1.1");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, $"https://cognito-idp.{_region}.amazonaws.com/")
+            {
+                Content = content
+            };
+            request.Headers.Add("X-Amz-Target", "AWSCognitoIdentityProviderService.ConfirmSignUp");
+
+            var response = await _httpClient.SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Confirmation failed: {response.StatusCode} - {responseContent}");
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Confirmation error: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> ResendConfirmationCodeAsync(string email)
+    {
+        try
+        {
+            var resendRequest = new
+            {
+                ClientId = _clientId,
+                Username = email
+            };
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = null
+            };
+            var jsonString = JsonSerializer.Serialize(resendRequest, jsonOptions);
+            var content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/x-amz-json-1.1");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, $"https://cognito-idp.{_region}.amazonaws.com/")
+            {
+                Content = content
+            };
+            request.Headers.Add("X-Amz-Target", "AWSCognitoIdentityProviderService.ResendConfirmationCode");
+
+            var response = await _httpClient.SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Resend confirmation failed: {response.StatusCode} - {responseContent}");
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Resend confirmation error: {ex.Message}");
+            return false;
         }
     }
 

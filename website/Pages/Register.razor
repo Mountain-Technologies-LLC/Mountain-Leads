@@ -9,92 +9,145 @@
 
 <div class="register-container">
     <div class="register-card">
-        <h1>Create Account</h1>
-        <p class="subtitle">Register to start managing your leads</p>
-
-        @if (!string.IsNullOrEmpty(_errorMessage))
+        @if (!_needsConfirmation)
         {
-            <div class="alert alert-danger" role="alert">
-                @_errorMessage
+            <h1>Create Account</h1>
+            <p class="subtitle">Register to start managing your leads</p>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @_errorMessage
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(_successMessage))
+            {
+                <div class="alert alert-success" role="alert">
+                    @_successMessage
+                </div>
+            }
+
+            <EditForm Model="@_credentials" OnValidSubmit="@HandleRegister">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <InputText id="email" 
+                              class="form-control" 
+                              @bind-Value="_credentials.Email" 
+                              placeholder="Enter your email"
+                              disabled="@_isLoading" />
+                    <ValidationMessage For="@(() => _credentials.Email)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <InputText id="password" 
+                              type="password" 
+                              class="form-control" 
+                              @bind-Value="_credentials.Password" 
+                              placeholder="Enter your password"
+                              disabled="@_isLoading" />
+                    <ValidationMessage For="@(() => _credentials.Password)" />
+                    <small class="form-text text-muted">
+                        Password must be at least 8 characters and contain uppercase, lowercase, and number.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <InputText id="confirmPassword" 
+                              type="password" 
+                              class="form-control" 
+                              @bind-Value="_confirmPassword" 
+                              placeholder="Confirm your password"
+                              disabled="@_isLoading" />
+                    @if (!string.IsNullOrEmpty(_confirmPassword) && _credentials.Password != _confirmPassword)
+                    {
+                        <div class="text-danger">
+                            <small>Passwords do not match</small>
+                        </div>
+                    }
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" disabled="@_isLoading">
+                    @if (_isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span> Registering...</span>
+                    }
+                    else
+                    {
+                        <span>Register</span>
+                    }
+                </button>
+            </EditForm>
+
+            <div class="login-link">
+                <p>Already have an account? <a href="/login">Login here</a></p>
             </div>
         }
-
-        @if (!string.IsNullOrEmpty(_successMessage))
+        else
         {
-            <div class="alert alert-success" role="alert">
-                @_successMessage
+            <h1>Confirm Your Email</h1>
+            <p class="subtitle">We sent a confirmation code to <strong>@_registeredEmail</strong></p>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @_errorMessage
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(_successMessage))
+            {
+                <div class="alert alert-success" role="alert">
+                    @_successMessage
+                </div>
+            }
+
+            <EditForm Model="@_confirmationCode" OnValidSubmit="@HandleConfirmation">
+                <div class="form-group">
+                    <label for="confirmationCode">Confirmation Code</label>
+                    <InputText id="confirmationCode" 
+                              class="form-control" 
+                              @bind-Value="_confirmationCode" 
+                              placeholder="Enter 6-digit code"
+                              disabled="@_isLoading" />
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" disabled="@_isLoading">
+                    @if (_isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span> Confirming...</span>
+                    }
+                    else
+                    {
+                        <span>Confirm Email</span>
+                    }
+                </button>
+            </EditForm>
+
+            <div class="login-link">
+                <p>Didn't receive the code? <button type="button" class="btn btn-link" @onclick="HandleResendCode" disabled="@_isLoading">Resend Code</button></p>
+                <p><a href="/login">Back to Login</a></p>
             </div>
         }
-
-        <EditForm Model="@_credentials" OnValidSubmit="@HandleRegister">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" />
-
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <InputText id="email" 
-                          class="form-control" 
-                          @bind-Value="_credentials.Email" 
-                          placeholder="Enter your email"
-                          disabled="@_isLoading" />
-                <ValidationMessage For="@(() => _credentials.Email)" />
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <InputText id="password" 
-                          type="password" 
-                          class="form-control" 
-                          @bind-Value="_credentials.Password" 
-                          placeholder="Enter your password"
-                          disabled="@_isLoading" />
-                <ValidationMessage For="@(() => _credentials.Password)" />
-                <small class="form-text text-muted">
-                    Password must be at least 8 characters and contain uppercase, lowercase, and number.
-                </small>
-            </div>
-
-            <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <InputText id="confirmPassword" 
-                          type="password" 
-                          class="form-control" 
-                          @bind-Value="_confirmPassword" 
-                          placeholder="Confirm your password"
-                          disabled="@_isLoading" />
-                @if (!string.IsNullOrEmpty(_confirmPassword) && _credentials.Password != _confirmPassword)
-                {
-                    <div class="text-danger">
-                        <small>Passwords do not match</small>
-                    </div>
-                }
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block" disabled="@_isLoading">
-                @if (_isLoading)
-                {
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    <span> Registering...</span>
-                }
-                else
-                {
-                    <span>Register</span>
-                }
-            </button>
-        </EditForm>
-
-        <div class="login-link">
-            <p>Already have an account? <a href="/login">Login here</a></p>
-        </div>
     </div>
 </div>
 
 @code {
     private UserCredentials _credentials = new();
     private string _confirmPassword = string.Empty;
+    private string _confirmationCode = string.Empty;
     private string _errorMessage = string.Empty;
     private string _successMessage = string.Empty;
     private bool _isLoading = false;
+    private bool _needsConfirmation = false;
+    private string _registeredEmail = string.Empty;
 
     private async Task HandleRegister()
     {
@@ -123,7 +176,59 @@
                 return;
             }
 
-            // Initialize default leads after successful registration
+            // Show confirmation step
+            _registeredEmail = _credentials.Email;
+            _needsConfirmation = true;
+            _successMessage = "Registration successful! Please check your email for a confirmation code.";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred during registration: {ex.Message}";
+            Console.WriteLine($"Registration error: {ex}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleConfirmation()
+    {
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(_confirmationCode))
+        {
+            _errorMessage = "Please enter the confirmation code.";
+            return;
+        }
+
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var confirmed = await AuthService.ConfirmRegistrationAsync(_registeredEmail, _confirmationCode);
+
+            if (!confirmed)
+            {
+                _errorMessage = "Invalid confirmation code. Please try again.";
+                _isLoading = false;
+                return;
+            }
+
+            // Now login with the credentials
+            var authResult = await AuthService.LoginAsync(_registeredEmail, _credentials.Password);
+
+            if (authResult == null)
+            {
+                _errorMessage = "Confirmation successful, but login failed. Please try logging in manually.";
+                _isLoading = false;
+                return;
+            }
+
+            // Initialize default leads after successful confirmation and login
             var leadsInitialized = await LeadService.InitializeDefaultLeadsAsync();
 
             if (!leadsInitialized)
@@ -132,19 +237,50 @@
             }
 
             // Show success message
-            _successMessage = "Registration successful! Redirecting to login...";
+            _successMessage = "Account confirmed! Redirecting to dashboard...";
             StateHasChanged();
 
             // Wait a moment to show the success message
-            await Task.Delay(2000);
+            await Task.Delay(1500);
 
-            // Redirect to login page
-            Navigation.NavigateTo("/login");
+            // Redirect to dashboard
+            Navigation.NavigateTo("/dashboard");
         }
         catch (Exception ex)
         {
-            _errorMessage = $"An error occurred during registration: {ex.Message}";
-            Console.WriteLine($"Registration error: {ex}");
+            _errorMessage = $"An error occurred during confirmation: {ex.Message}";
+            Console.WriteLine($"Confirmation error: {ex}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleResendCode()
+    {
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var resent = await AuthService.ResendConfirmationCodeAsync(_registeredEmail);
+
+            if (resent)
+            {
+                _successMessage = "Confirmation code resent! Please check your email.";
+            }
+            else
+            {
+                _errorMessage = "Failed to resend confirmation code. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred: {ex.Message}";
         }
         finally
         {
