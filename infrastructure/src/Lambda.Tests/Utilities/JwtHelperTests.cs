@@ -34,7 +34,7 @@ public class JwtHelperTests
         var authHeader = $"Bearer {token}";
 
         // Act
-        var actualUserId = JwtHelper.ExtractUserId(authHeader);
+        var actualUserId = JwtHelper.ExtractUserIdFromToken(authHeader);
 
         // Assert
         Assert.Equal(expectedUserId, actualUserId);
@@ -49,7 +49,7 @@ public class JwtHelperTests
         var authHeader = $"Bearer {token}";
 
         // Act
-        var actualUserId = JwtHelper.ExtractUserId(authHeader);
+        var actualUserId = JwtHelper.ExtractUserIdFromToken(authHeader);
 
         // Assert
         Assert.Equal(expectedUserId, actualUserId);
@@ -67,7 +67,7 @@ public class JwtHelperTests
         var authHeader = $"Bearer {token}";
 
         // Act
-        var actualUserId = JwtHelper.ExtractUserId(authHeader);
+        var actualUserId = JwtHelper.ExtractUserIdFromToken(authHeader);
 
         // Assert
         Assert.Equal(expectedUserId, actualUserId);
@@ -81,7 +81,7 @@ public class JwtHelperTests
         var token = CreateTestToken(new Claim("sub", expectedUserId));
 
         // Act
-        var actualUserId = JwtHelper.ExtractUserId(token);
+        var actualUserId = JwtHelper.ExtractUserIdFromToken(token);
 
         // Assert
         Assert.Equal(expectedUserId, actualUserId);
@@ -91,7 +91,7 @@ public class JwtHelperTests
     public void ExtractUserId_WithNullHeader_ThrowsArgumentException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractUserId(null));
+        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractUserIdFromToken(null));
         Assert.Contains("Authorization header is missing", exception.Message);
     }
 
@@ -99,7 +99,7 @@ public class JwtHelperTests
     public void ExtractUserId_WithEmptyHeader_ThrowsArgumentException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractUserId(""));
+        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractUserIdFromToken(""));
         Assert.Contains("Authorization header is missing", exception.Message);
     }
 
@@ -110,7 +110,7 @@ public class JwtHelperTests
         var malformedToken = "Bearer not-a-valid-jwt-token";
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractUserId(malformedToken));
+        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractUserIdFromToken(malformedToken));
         Assert.Contains("Invalid JWT token", exception.Message);
     }
 
@@ -122,7 +122,7 @@ public class JwtHelperTests
         var authHeader = $"Bearer {token}";
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractUserId(authHeader));
+        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractUserIdFromToken(authHeader));
         Assert.Contains("User ID claim not found in token", exception.Message);
     }
 
@@ -135,7 +135,7 @@ public class JwtHelperTests
         var authHeader = $"Bearer {token}";
 
         // Act
-        var actualEmail = JwtHelper.ExtractEmail(authHeader);
+        var actualEmail = JwtHelper.ExtractEmailFromToken(authHeader);
 
         // Assert
         Assert.Equal(expectedEmail, actualEmail);
@@ -145,7 +145,7 @@ public class JwtHelperTests
     public void ExtractEmail_WithNullHeader_ThrowsArgumentException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractEmail(null));
+        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractEmailFromToken(null));
         Assert.Contains("Authorization header is missing", exception.Message);
     }
 
@@ -157,7 +157,7 @@ public class JwtHelperTests
         var authHeader = $"Bearer {token}";
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractEmail(authHeader));
+        var exception = Assert.Throws<ArgumentException>(() => JwtHelper.ExtractEmailFromToken(authHeader));
         Assert.Contains("Email claim not found in token", exception.Message);
     }
 }

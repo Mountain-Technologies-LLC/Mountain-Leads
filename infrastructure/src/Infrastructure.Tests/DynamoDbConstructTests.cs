@@ -14,8 +14,10 @@ namespace Infrastructure.Tests
     /// Property-based tests for DynamoDbConstruct
     /// Feature: mountain-leads-app, Property 11: User data isolation
     /// </summary>
+    [Collection("CDK Tests")]
     public class DynamoDbConstructTests
     {
+        public DynamoDbConstructTests(CdkAppFixture _) { }
         /// <summary>
         /// Property 11: User data isolation
         /// For any two distinct users U1 and U2, the DynamoDB table structure must ensure

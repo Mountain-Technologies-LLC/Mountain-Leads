@@ -67,7 +67,7 @@ public class DashboardTests
         // Arrange
         var mockJsRuntime = new Mock<IJSRuntime>();
         var token = CreateJwtToken();
-        
+
         mockJsRuntime
             .Setup(x => x.InvokeAsync<string?>(
                 "sessionStorage.getItem",
@@ -87,8 +87,8 @@ public class DashboardTests
                 Email = "john@test.com",
                 Location = "New York",
                 Notes = "Important client",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow.ToString("o"),
+                UpdatedAt = DateTime.UtcNow.ToString("o")
             },
             new Lead
             {
@@ -101,8 +101,18 @@ public class DashboardTests
                 Email = "jane@tech.com",
                 Location = "San Francisco",
                 Notes = "Tech lead",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow.ToString("o"),
+                UpdatedAt = DateTime.UtcNow.ToString("o")
+            }
+        };
+
+        var responseData = new ApiResponse<ListLeadsResponse>
+        {
+            Success = true,
+            Data = new ListLeadsResponse
+            {
+                Leads = testLeads,
+                Count = testLeads.Count
             }
         };
 
@@ -117,7 +127,7 @@ public class DashboardTests
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent(
-                    JsonSerializer.Serialize(new ListLeadsResponse { Leads = testLeads, Count = testLeads.Count }),
+                    JsonSerializer.Serialize(responseData),
                     Encoding.UTF8,
                     "application/json")
             });
@@ -145,12 +155,22 @@ public class DashboardTests
         // Arrange
         var mockJsRuntime = new Mock<IJSRuntime>();
         var token = CreateJwtToken();
-        
+
         mockJsRuntime
             .Setup(x => x.InvokeAsync<string?>(
                 "sessionStorage.getItem",
                 It.IsAny<object[]>()))
             .ReturnsAsync(token);
+
+        var responseData = new ApiResponse<ListLeadsResponse>
+        {
+            Success = true,
+            Data = new ListLeadsResponse
+            {
+                Leads = new List<Lead>(),
+                Count = 0
+            }
+        };
 
         var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
         mockHttpMessageHandler
@@ -163,7 +183,7 @@ public class DashboardTests
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent(
-                    JsonSerializer.Serialize(new ListLeadsResponse { Leads = new List<Lead>(), Count = 0 }),
+                    JsonSerializer.Serialize(responseData),
                     Encoding.UTF8,
                     "application/json")
             });
@@ -189,7 +209,7 @@ public class DashboardTests
         // Arrange
         var mockJsRuntime = new Mock<IJSRuntime>();
         var token = CreateJwtToken();
-        
+
         mockJsRuntime
             .Setup(x => x.InvokeAsync<string?>(
                 "sessionStorage.getItem",
@@ -207,8 +227,13 @@ public class DashboardTests
             Email = "new@corp.com",
             Location = "Boston",
             Notes = "New contact",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.ToString("o"),
+            UpdatedAt = DateTime.UtcNow.ToString("o")
+        };
+
+        var responseData = new LeadResponse
+        {
+            Lead = createdLead
         };
 
         var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
@@ -222,7 +247,7 @@ public class DashboardTests
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent(
-                    JsonSerializer.Serialize(new LeadResponse { Lead = createdLead }),
+                    JsonSerializer.Serialize(responseData),
                     Encoding.UTF8,
                     "application/json")
             });
@@ -261,7 +286,7 @@ public class DashboardTests
         // Arrange
         var mockJsRuntime = new Mock<IJSRuntime>();
         var token = CreateJwtToken();
-        
+
         mockJsRuntime
             .Setup(x => x.InvokeAsync<string?>(
                 "sessionStorage.getItem",
@@ -280,8 +305,13 @@ public class DashboardTests
             Email = "updated@corp.com",
             Location = "Chicago",
             Notes = "Updated contact",
-            CreatedAt = DateTime.UtcNow.AddDays(-1),
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.AddDays(-1).ToString("o"),
+            UpdatedAt = DateTime.UtcNow.ToString("o")
+        };
+
+        var responseData = new LeadResponse
+        {
+            Lead = updatedLead
         };
 
         var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
@@ -295,7 +325,7 @@ public class DashboardTests
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent(
-                    JsonSerializer.Serialize(new LeadResponse { Lead = updatedLead }),
+                    JsonSerializer.Serialize(responseData),
                     Encoding.UTF8,
                     "application/json")
             });
@@ -335,7 +365,7 @@ public class DashboardTests
         // Arrange
         var mockJsRuntime = new Mock<IJSRuntime>();
         var token = CreateJwtToken();
-        
+
         mockJsRuntime
             .Setup(x => x.InvokeAsync<string?>(
                 "sessionStorage.getItem",
@@ -380,7 +410,7 @@ public class DashboardTests
         // Arrange
         var mockJsRuntime = new Mock<IJSRuntime>();
         var token = CreateJwtToken();
-        
+
         mockJsRuntime
             .Setup(x => x.InvokeAsync<string?>(
                 "sessionStorage.getItem",
@@ -429,32 +459,31 @@ public class DashboardTests
         // Arrange
         var mockJsRuntime = new Mock<IJSRuntime>();
         var token = CreateJwtToken();
-        
+
         mockJsRuntime
             .Setup(x => x.InvokeAsync<string?>(
                 "sessionStorage.getItem",
                 It.IsAny<object[]>()))
             .ReturnsAsync(token);
 
-        var initialLeads = new List<Lead>
+        var existingLead = new Lead
         {
-            new Lead
-            {
-                LeadId = Guid.NewGuid().ToString(),
-                UserId = "test-user",
-                Name = "Existing Lead",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            }
+            LeadId = Guid.NewGuid().ToString(),
+            UserId = "test-user",
+            Name = "Existing Lead",
+            CreatedAt = DateTime.UtcNow.ToString("o"),
+            UpdatedAt = DateTime.UtcNow.ToString("o")
         };
+
+        var initialLeads = new List<Lead> { existingLead };
 
         var newLead = new Lead
         {
             LeadId = Guid.NewGuid().ToString(),
             UserId = "test-user",
             Name = "New Lead",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow.ToString("o"),
+            UpdatedAt = DateTime.UtcNow.ToString("o")
         };
 
         var updatedLeads = new List<Lead>(initialLeads) { newLead };
@@ -473,11 +502,15 @@ public class DashboardTests
                 if (callCount == 1)
                 {
                     // First call - create lead
+                    var createResponse = new LeadResponse
+                    {
+                        Lead = newLead
+                    };
                     return new HttpResponseMessage
                     {
                         StatusCode = HttpStatusCode.OK,
                         Content = new StringContent(
-                            JsonSerializer.Serialize(new LeadResponse { Lead = newLead }),
+                            JsonSerializer.Serialize(createResponse),
                             Encoding.UTF8,
                             "application/json")
                     };
@@ -485,11 +518,20 @@ public class DashboardTests
                 else
                 {
                     // Second call - get leads
+                    var listResponse = new ApiResponse<ListLeadsResponse>
+                    {
+                        Success = true,
+                        Data = new ListLeadsResponse
+                        {
+                            Leads = updatedLeads,
+                            Count = updatedLeads.Count
+                        }
+                    };
                     return new HttpResponseMessage
                     {
                         StatusCode = HttpStatusCode.OK,
                         Content = new StringContent(
-                            JsonSerializer.Serialize(new ListLeadsResponse { Leads = updatedLeads, Count = updatedLeads.Count }),
+                            JsonSerializer.Serialize(listResponse),
                             Encoding.UTF8,
                             "application/json")
                     };

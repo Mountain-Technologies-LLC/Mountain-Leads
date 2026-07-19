@@ -21,11 +21,12 @@ namespace Infrastructure.Constructs
                 this, "s3BucketDeploy",
                 new BucketDeploymentProps
                 {
-                    Sources = [Source.Asset("./website/bin/Release/net8.0/publish/wwwroot")],
+                    Sources = [Source.Asset("./website/bin/Release/net10.0/publish/wwwroot")],
                     DestinationBucket = props.Bucket,
                     Distribution = props.distribution,
                     DistributionPaths = ["/*"],
-                    //MemoryLimit = 256
+                    MemoryLimit = 1024,
+                    Ephemeral = Size.Mebibytes(1024)
                 });
 
             // Output the website URL

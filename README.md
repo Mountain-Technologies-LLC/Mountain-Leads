@@ -1,5 +1,5 @@
 # Mountain Leads
-A serverless lead management system built with .NET 8 Blazor WebAssembly and AWS cloud services. Mountain Leads provides secure, user-isolated contact tracking with full CRUD operations, deployed as a globally distributed single-page application.
+A serverless lead management system built with .NET 10 Blazor WebAssembly and AWS cloud services. Mountain Leads provides secure, user-isolated contact tracking with full CRUD operations, deployed as a globally distributed single-page application.
 
 ## Architecture
 **Frontend**: Blazor WebAssembly SPA with component-based UI, client-side routing, and JWT-based authentication
@@ -8,7 +8,7 @@ A serverless lead management system built with .NET 8 Blazor WebAssembly and AWS
 <img src="./Documents/dashboard.png" alt="dashboard" width="200">
 <img src="./Documents/edit.png" alt="edit" width="200">
 
-**Backend**: AWS Lambda functions (.NET 8) behind API Gateway with Cognito authorization
+**Backend**: AWS Lambda functions (.NET 10) behind API Gateway with Cognito authorization
 
 <img src="./Documents/lambda.png" alt="lambda" width="200">
 <img src="./Documents/api-gateway.png" alt="api-gateway" width="200">

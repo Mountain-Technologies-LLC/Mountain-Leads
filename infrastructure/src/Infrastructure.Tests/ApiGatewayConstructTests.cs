@@ -17,8 +17,10 @@ namespace Infrastructure.Tests
     /// Property-based tests for ApiGatewayConstruct
     /// Feature: mountain-leads-app, Property 9: API authorization requirement
     /// </summary>
+    [Collection("CDK Tests")]
     public class ApiGatewayConstructTests
     {
+        public ApiGatewayConstructTests(CdkAppFixture _) { }
         /// <summary>
         /// Property 9: API authorization requirement
         /// For any API endpoint configuration, all CRUD endpoints should require Cognito authorization,
@@ -64,7 +66,7 @@ namespace Infrastructure.Tests
             {
                 var mockFunctionProps = new FunctionProps
                 {
-                    Runtime = Runtime.DOTNET_8,
+                    Runtime = Runtime.DOTNET_10,
                     Handler = "test",
                     Code = Code.FromAsset(tempDir),
                     Timeout = Duration.Seconds(30),

@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Amazon.CDK.Lib" Version="2.230.0" />
+    <PackageReference Include="Amazon.CDK.Lib" Version="2.253.0" />
     <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.4.5" />
-    <PackageReference Include="Constructs" Version="10.4.3" />
+    <PackageReference Include="Constructs" Version="10.5.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="FsCheck.Xunit" Version="3.3.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

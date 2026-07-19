@@ -17,7 +17,7 @@ To deploy the infrastructure to AWS and verify all resources, follow these steps
 Ensure you have:
 - AWS credentials configured (`aws configure`)
 - AWS CDK CLI installed (`npm install -g aws-cdk`)
-- .NET 8 SDK installed
+- .NET 10 SDK installed
 - Node.js 18+ installed
 
 ### Step 1: Deploy Infrastructure
@@ -74,7 +74,7 @@ After deployment completes, verify the following resources in AWS Console:
   - UpdateLeadFunction
   - DeleteLeadFunction
   - InitLeadsFunction
-- Check: Runtime is .NET 8
+- Check: Runtime is .NET 10
 - Check: Environment variables are set (TABLE_NAME, AWS_REGION)
 - Check: DynamoDB permissions are granted
 

@@ -70,8 +70,8 @@ public class LeadServicePropertyTests
              Email = email,
              Location = location,
              Notes = notes,
-             CreatedAt = DateTime.UtcNow,
-             UpdatedAt = DateTime.UtcNow
+             CreatedAt = DateTime.UtcNow.ToString("o"),
+             UpdatedAt = DateTime.UtcNow.ToString("o")
          }).ToArbitrary();
 
     private static ILeadService CreateLeadService(
@@ -106,7 +106,7 @@ public class LeadServicePropertyTests
             {
                 // Arrange
                 var mockJsRuntime = new Mock<IJSRuntime>();
-                
+
                 // Mock sessionStorage.getItem to return the JWT token
                 mockJsRuntime
                     .Setup(x => x.InvokeAsync<string?>(
@@ -116,6 +116,11 @@ public class LeadServicePropertyTests
 
                 var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
                 string? capturedAuthHeader = null;
+
+                var leadResponse = new LeadResponse
+                {
+                    Lead = lead
+                };
 
                 // Mock HTTP request to capture the Authorization header
                 mockHttpMessageHandler
@@ -136,7 +141,7 @@ public class LeadServicePropertyTests
                     {
                         StatusCode = HttpStatusCode.OK,
                         Content = new StringContent(
-                            JsonSerializer.Serialize(new LeadResponse { Lead = lead }),
+                            JsonSerializer.Serialize(leadResponse),
                             Encoding.UTF8,
                             "application/json")
                     });
@@ -166,7 +171,7 @@ public class LeadServicePropertyTests
                 // Verify the token can be parsed and contains userId
                 var tokenParts = token.Split('.');
                 var isValidJwtStructure = tokenParts.Length == 3;
-                
+
                 // Decode the payload to verify userId claims
                 var payloadJson = Encoding.UTF8.GetString(
                     Convert.FromBase64String(
@@ -174,13 +179,13 @@ public class LeadServicePropertyTests
                             .Replace('-', '+')
                             .Replace('_', '/')
                             .PadRight(tokenParts[1].Length + (4 - tokenParts[1].Length % 4) % 4, '=')));
-                
+
                 var payload = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(payloadJson);
                 var hasSubClaim = payload?.ContainsKey("sub") ?? false;
                 var hasCognitoUsernameClaim = payload?.ContainsKey("cognito:username") ?? false;
                 var hasUserIdClaim = hasSubClaim || hasCognitoUsernameClaim;
 
-                return (hasAuthHeader && hasBearerScheme && hasToken && 
+                return (hasAuthHeader && hasBearerScheme && hasToken &&
                         isValidJwtStructure && hasUserIdClaim)
                     .Label($"API requests should include JWT token in Authorization header with valid userId claims");
             });
@@ -199,7 +204,7 @@ public class LeadServicePropertyTests
             {
                 // Arrange
                 var mockJsRuntime = new Mock<IJSRuntime>();
-                
+
                 mockJsRuntime
                     .Setup(x => x.InvokeAsync<string?>(
                         "sessionStorage.getItem",
@@ -218,31 +223,45 @@ public class LeadServicePropertyTests
                     .Callback<HttpRequestMessage, CancellationToken>((request, _) =>
                     {
                         // Track if Authorization header is present
-                        requestsWithAuth.Add(request.Headers.Authorization != null &&
-                                           request.Headers.Authorization.Scheme == "Bearer" &&
-                                           request.Headers.Authorization.Parameter == token);
+                        requestsWithAuth.Add(
+                            request.Headers.Authorization != null &&
+                            request.Headers.Authorization.Scheme == "Bearer" &&
+                            request.Headers.Authorization.Parameter == token);
                     })
                     .ReturnsAsync((HttpRequestMessage request, CancellationToken _) =>
                     {
                         // Return appropriate response based on HTTP method
                         if (request.Method == HttpMethod.Get && request.RequestUri?.PathAndQuery.Contains("/leads/") == true)
                         {
+                            var singleLeadResponse = new LeadResponse
+                            {
+                                Lead = lead
+                            };
                             return new HttpResponseMessage
                             {
                                 StatusCode = HttpStatusCode.OK,
                                 Content = new StringContent(
-                                    JsonSerializer.Serialize(new LeadResponse { Lead = lead }),
+                                    JsonSerializer.Serialize(singleLeadResponse),
                                     Encoding.UTF8,
                                     "application/json")
                             };
                         }
                         else if (request.Method == HttpMethod.Get)
                         {
+                            var listResponse = new ApiResponse<ListLeadsResponse>
+                            {
+                                Success = true,
+                                Data = new ListLeadsResponse
+                                {
+                                    Leads = new List<Lead> { lead },
+                                    Count = 1
+                                }
+                            };
                             return new HttpResponseMessage
                             {
                                 StatusCode = HttpStatusCode.OK,
                                 Content = new StringContent(
-                                    JsonSerializer.Serialize(new ListLeadsResponse { Leads = new List<Lead> { lead }, Count = 1 }),
+                                    JsonSerializer.Serialize(listResponse),
                                     Encoding.UTF8,
                                     "application/json")
                             };
@@ -257,11 +276,15 @@ public class LeadServicePropertyTests
                         }
                         else
                         {
+                            var defaultResponse = new LeadResponse
+                            {
+                                Lead = lead
+                            };
                             return new HttpResponseMessage
                             {
                                 StatusCode = HttpStatusCode.OK,
                                 Content = new StringContent(
-                                    JsonSerializer.Serialize(new LeadResponse { Lead = lead }),
+                                    JsonSerializer.Serialize(defaultResponse),
                                     Encoding.UTF8,
                                     "application/json")
                             };

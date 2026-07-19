@@ -7,11 +7,11 @@ This directory contains scripts for building and deploying the Mountain Leads ap
 ### Build Scripts
 
 - **`npm run build:lambda`** - Builds the Lambda functions for deployment
-  - Publishes the Lambda project to `infrastructure/src/Lambda/bin/Release/net8.0/publish`
-  - Uses .NET 8 with linux-x64 runtime
+  - Publishes the Lambda project to `infrastructure/src/Lambda/bin/Release/net10.0/publish`
+  - Uses .NET 10 with linux-x64 runtime
 
 - **`npm run build:website`** - Builds the Blazor WebAssembly application
-  - Publishes the website project to `website/bin/Release/net8.0/publish`
+  - Publishes the website project to `website/bin/Release/net10.0/publish`
   - Produces static files ready for S3 deployment
 
 - **`npm run build:all`** - Builds both Lambda functions and Blazor website
@@ -116,7 +116,7 @@ npm run deploy:full
 
 ## Requirements
 
-- .NET 8 SDK
+- .NET 10 SDK
 - Node.js 18+
 - AWS CDK CLI (`npm install -g aws-cdk`)
 - AWS credentials configured
@@ -151,5 +151,5 @@ Make sure your AWS credentials have permission to read CloudFormation stack outp
 If builds fail, ensure you have the correct .NET SDK version installed:
 
 ```bash
-dotnet --version  # Should be 8.0.x
+dotnet --version  # Should be 10.0.x
 ```

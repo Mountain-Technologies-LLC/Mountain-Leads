@@ -2,7 +2,7 @@
 
 - [x] 1. Set up Blazor WebAssembly project structure
   - Create new Blazor WebAssembly project in ./website folder
-  - Configure project for .NET 8
+  - Configure project for .NET 10
   - Set up folder structure: Pages, Services, Models, Components
   - Add required NuGet packages: Amazon.Extensions.CognitoAuthentication, AWSSDK.DynamoDBv2
   - Create appsettings.json for AWS configuration
@@ -34,7 +34,7 @@
 
 - [x] 4. Implement Lambda functions for CRUD operations
   - [x] 4.1 Create Lambda project structure
-    - Create new .NET 8 Lambda project in infrastructure/src/Lambda
+    - Create new .NET 10 Lambda project in infrastructure/src/Lambda
     - Add NuGet packages: Amazon.Lambda.AspNetCoreServer, AWSSDK.DynamoDBv2
     - Create shared Models folder with Lead.cs model
     - Create shared utilities for JWT parsing and DynamoDB operations
@@ -116,7 +116,7 @@
 - [x] 5. Implement CDK Lambda construct
   - [x] 5.1 Create LambdaConstruct.cs in infrastructure/src/Infrastructure/Constructs
     - Create Lambda functions for all CRUD operations
-    - Configure .NET 8 runtime
+    - Configure .NET 10 runtime
     - Set environment variables (TABLE_NAME, AWS_REGION)
     - Grant DynamoDB permissions (PutItem, GetItem, Query, UpdateItem, DeleteItem)
     - Configure timeout (30 seconds) and memory (512MB)
@@ -260,7 +260,7 @@
   - _Requirements: 10.1, 10.2, 10.4_
 
 - [x] 17. Update BucketDeploymentConstruct for Blazor output
-  - Update source path from "./dist/browser" to "./website/bin/Release/net8.0/publish/wwwroot"
+  - Update source path from "./dist/browser" to "./website/bin/Release/net10.0/publish/wwwroot"
   - Ensure deployment invalidates CloudFront cache
   - _Requirements: 7.4, 8.4_
 

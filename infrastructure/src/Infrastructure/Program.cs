@@ -43,9 +43,9 @@ namespace Infrastructure
                 throw new ArgumentException("The value {name} was not found. Sample: 'cdk deploy --context name={name}'");
             }
 
-            if (!Directory.Exists("./website/bin/Release/net8.0/publish/wwwroot"))
+            if (!Directory.Exists("./website/bin/Release/net10.0/publish/wwwroot"))
             {
-                throw new FileNotFoundException("The folder './website/bin/Release/net8.0/publish/wwwroot' does not exist. Contents in this file are copied into a s3 Bucket.");
+                throw new FileNotFoundException("The folder './website/bin/Release/net10.0/publish/wwwroot' does not exist. Contents in this file are copied into a s3 Bucket.");
             }
         }
     }

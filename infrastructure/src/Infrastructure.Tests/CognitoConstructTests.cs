@@ -14,8 +14,10 @@ namespace Infrastructure.Tests
     /// Property-based tests for CognitoConstruct
     /// Feature: mountain-leads-app, Property 1: User registration creates Cognito account
     /// </summary>
+    [Collection("CDK Tests")]
     public class CognitoConstructTests
     {
+        public CognitoConstructTests(CdkAppFixture _) { }
         /// <summary>
         /// Property 1: User registration creates Cognito account
         /// For any valid domain name, the CognitoConstruct should create a User Pool

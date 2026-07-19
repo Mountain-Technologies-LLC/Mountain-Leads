@@ -1,13 +1,13 @@
 # Technology Stack
 
 ## Frontend
-- **.NET 8 Blazor WebAssembly**: Client-side SPA framework
+- **.NET 10 Blazor WebAssembly**: Client-side SPA framework
 - **C# with nullable reference types enabled**
 - **AWS SDK for .NET**: Cognito authentication, DynamoDB client
 - **System.IdentityModel.Tokens.Jwt**: JWT token handling
 
 ## Backend
-- **AWS Lambda (.NET 8)**: Serverless compute for API endpoints
+- **AWS Lambda (.NET 10)**: Serverless compute for API endpoints
 - **AWS API Gateway**: REST API with Cognito authorizer
 - **Amazon DynamoDB**: NoSQL database (PAY_PER_REQUEST billing)
 - **Amazon Cognito**: User authentication and authorization
@@ -31,10 +31,10 @@
 - `System.IdentityModel.Tokens.Jwt` (v8.2.1)
 
 ### Blazor Website
-- `Microsoft.AspNetCore.Components.WebAssembly` (v8.0.0)
+- `Microsoft.AspNetCore.Components.WebAssembly` (v10.0.0)
 - `Amazon.Extensions.CognitoAuthentication` (v3.1.2)
 - `AWSSDK.DynamoDBv2` (v4.0.10.1)
-- `System.IdentityModel.Tokens.Jwt` (v8.0.0)
+- `System.IdentityModel.Tokens.Jwt` (v8.2.1)
 
 ## Common Commands
 
@@ -100,7 +100,7 @@ npm run update-config
 
 ## Prerequisites
 
-- .NET 8 SDK
+- .NET 10 SDK
 - Node.js 18+
 - AWS CLI configured with credentials (`aws configure`)
 - AWS CDK CLI (`npm install -g aws-cdk`)

@@ -35,10 +35,10 @@ namespace Infrastructure.Constructs
             // Common Lambda function configuration
             var functionProps = new FunctionProps
             {
-                Runtime = Runtime.DOTNET_8,
+                Runtime = Runtime.DOTNET_10,
                 Handler = "Lambda",
-                Code = Code.FromAsset("./infrastructure/src/Lambda/bin/Release/net8.0/publish"),
-                // Code = Code.FromAsset("../src/Lambda/bin/Release/net8.0/publish"),
+                Code = Code.FromAsset("./infrastructure/src/Lambda/bin/Release/net10.0/publish"),
+                // Code = Code.FromAsset("../src/Lambda/bin/Release/net10.0/publish"),
                 Timeout = Duration.Seconds(30),
                 MemorySize = 512,
                 Environment = environment

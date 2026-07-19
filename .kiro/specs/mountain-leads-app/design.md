@@ -178,7 +178,7 @@ POST   /leads/init         - Initialize default leads (called after registration
 5. **DeleteLeadFunction**: Handles DELETE /leads/{leadId}
 6. **InitLeadsFunction**: Handles POST /leads/init
 
-**Runtime**: .NET 8 (Amazon.Lambda.AspNetCoreServer)
+**Runtime**: .NET 10 (Amazon.Lambda.AspNetCoreServer)
 
 **Environment Variables**:
 - `TABLE_NAME`: DynamoDB table name
