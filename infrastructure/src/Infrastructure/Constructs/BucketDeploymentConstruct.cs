@@ -26,7 +26,7 @@ namespace Infrastructure.Constructs
                     Distribution = props.distribution,
                     DistributionPaths = ["/*"],
                     MemoryLimit = 1024,
-                    Ephemeral = Size.Mebibytes(1024)
+                    EphemeralStorageSize = Size.Mebibytes(1024)
                 });
 
             // Output the website URL
